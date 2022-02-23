@@ -64,7 +64,7 @@ const App = () => {
 				onClick={(e) => {
 					e.preventDefault();
 
-					fetch('http://localhost:4005/test')
+					fetch('https://www.simpletodo.xyz/backend/test')
 						.then((res) => res.json())
 						.then((res) => setTest(res))
 						.catch((err) => console.log(err));
