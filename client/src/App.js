@@ -96,7 +96,6 @@ const App = () => {
 								style={{ marginLeft: 'auto', marginRight: '0' }}
 								onClick={(e, id) => RemoveTodoHandler(e, elm.id)}>
 								<DeleteIcon src={require('./delete_icon.png')} />
-								{/* <img src={require('./delete_icon.png')} style={{ width: '20px', height: '20px' }} /> */}
 							</div>
 						</ListGroup.Item>
 					))}
