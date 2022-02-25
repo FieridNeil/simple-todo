@@ -15,11 +15,38 @@ app.get('/api/todos', (req, res) => {
 });
 
 app.post('/api/todo', (req, res) => {
+	let date;
+	let time;
 	let sql = 'INSERT INTO todo (name, is_done, due_date) VALUES (?, 0, ?)';
-	const datetime = req.body.dueDate + ' ' + req.body.time + ':00';
+	let datetime = req.body.dueDate + ' ' + req.body.time + ':00';
+
+	console.log(req.body.dueDate, req.body.time);
+	if (req.body.dueDate === undefined && req.body.time === undefined) {
+		datetime = null;
+	} else {
+		if (req.body.dueDate === undefined) {
+			let today = new Date();
+			date = today.getFullYear() + '-' + parseInt(today.getMonth() + 1) + '-' + today.getDate();
+		} else {
+			date = req.body.dueDate;
+		}
+		if (req.body.time === undefined) {
+			time = '';
+		} else {
+			time = req.body.time;
+		}
+		datetime = date + ' ' + time;
+	}
 
 	conn.execute(sql, [req.body.name, datetime], (err, results, fields) => {
 		if (err) throw new Error('Failed to insert into database', err);
+		res.json({ status: 'OK' });
+	});
+});
+
+app.post('/delete_todo', (req, res) => {
+	conn.execute('DELETE FROM todo WHERE id = ?', [req.body.id], (err, results, fields) => {
+		if (err) throw new Error('Failed to delete todo', err);
 		res.json({ status: 'OK' });
 	});
 });
