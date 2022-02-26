@@ -40,14 +40,23 @@ app.post('/api/todo', (req, res) => {
 
 	conn.execute(sql, [req.body.name, datetime], (err, results, fields) => {
 		if (err) throw new Error('Failed to insert into database', err);
+		console.log(results);
+		res.json({ status: 'OK', data: { id: results.insertId, due_date: datetime, is_done: 0, name: req.body.name } });
+	});
+});
+
+app.post('/api/update_todo_status', (req, res) => {
+	conn.execute('UPDATE todo SET is_done = ? WHERE id = ?', [req.body.status, req.body.id], (err, results, fields) => {
+		if (err) throw new Error('Failed to update todo status', err);
 		res.json({ status: 'OK' });
 	});
 });
 
-app.post('/delete_todo', (req, res) => {
+app.post('/api/delete_todo', (req, res) => {
 	conn.execute('DELETE FROM todo WHERE id = ?', [req.body.id], (err, results, fields) => {
 		if (err) throw new Error('Failed to delete todo', err);
-		res.json({ status: 'OK' });
+		console.log(results.i);
+		res.json({ status: 'OK', data: { id: results.insertId } });
 	});
 });
 
