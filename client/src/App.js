@@ -54,13 +54,15 @@ const App = () => {
 			headers: { 'Content-Type': 'application/json' },
 		})
 			.then((res) => res.json())
-			.then((res) => setTodos([...todos, res.data]))
+			.then((res) => {
+				setTodos([...todos, res.data]);
+				setNewTodo('');
+				setDueDate('');
+				setTime('');
+				setErr();
+				setReload(!reload);
+			})
 			.catch((err) => console.log('Failed to add new todo', err));
-		setNewTodo('');
-		setDueDate('');
-		setTime('');
-		setErr();
-		setReload(!reload);
 	};
 
 	const ChangeTodoStatusHander = (e, id) => {
@@ -109,7 +111,6 @@ const App = () => {
 				console.log(res);
 			})
 			.catch((err) => console.log('Failed to update todo avatar', err));
-		setReload(!reload);
 	};
 
 	return (
