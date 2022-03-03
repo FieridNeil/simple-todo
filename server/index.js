@@ -8,29 +8,38 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/todos', (req, res) => {
-	conn.query('select * from todo', (err, results, fields) => {
-		if (err) throw new Error('Error in fetching todo tasks', err);
+	conn.query(
+		'select todo.id, todo.name, todo.is_done, todo.due_date, avatar.id as avt_id, avatar.initial, avatar.background_color from todo inner join avatar where todo.avt_id = avatar.id',
+		(err, results, fields) => {
+			if (err) throw new Error('Error in fetching todo tasks', err);
+			res.json(results);
+		}
+	);
+});
+
+app.get('/api/avatars', (req, res) => {
+	conn.query('select * from avatar', (err, results, fields) => {
+		if (err) throw new Error('Error in fetching avatars', err);
 		res.json(results);
 	});
 });
 
-app.post('/api/todo', (req, res) => {
+app.post('/api/add_todo', (req, res) => {
 	let date;
 	let time;
-	let sql = 'INSERT INTO todo (name, is_done, due_date) VALUES (?, 0, ?)';
+	let sql = 'INSERT INTO todo (name, is_done, due_date, avt_id) VALUES (?, 0, ?, 1)';
 	let datetime = req.body.dueDate + ' ' + req.body.time + ':00';
 
-	console.log(req.body.dueDate, req.body.time);
-	if (req.body.dueDate === undefined && req.body.time === undefined) {
+	if (req.body.dueDate === '' && req.body.time === '') {
 		datetime = null;
 	} else {
-		if (req.body.dueDate === undefined) {
+		if (req.body.dueDate === '') {
 			let today = new Date();
 			date = today.getFullYear() + '-' + parseInt(today.getMonth() + 1) + '-' + today.getDate();
 		} else {
 			date = req.body.dueDate;
 		}
-		if (req.body.time === undefined) {
+		if (req.body.time === '') {
 			time = '';
 		} else {
 			time = req.body.time;
@@ -52,11 +61,22 @@ app.post('/api/update_todo_status', (req, res) => {
 	});
 });
 
+app.post('/api/update_todo_avt', (req, res) => {
+	conn.execute(
+		'UPDATE todo SET avt_id = ? WHERE id = ?',
+		[req.body.avtID, req.body.todoID],
+		(err, results, fields) => {
+			if (err) throw new Error('Failed to update todo avatar', err);
+			res.json({ status: 'OK' });
+		}
+	);
+});
+
 app.post('/api/delete_todo', (req, res) => {
 	conn.execute('DELETE FROM todo WHERE id = ?', [req.body.id], (err, results, fields) => {
 		if (err) throw new Error('Failed to delete todo', err);
-		console.log(results.i);
-		res.json({ status: 'OK', data: { id: results.insertId } });
+		console.log(results);
+		res.json({ status: 'OK' });
 	});
 });
 

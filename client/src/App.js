@@ -4,7 +4,8 @@ import ListGroup from 'react-bootstrap/ListGroup';
 import Button from 'react-bootstrap/Button';
 import Alert from 'react-bootstrap/Alert';
 import styled from 'styled-components';
-import deleteIcon from './delete_icon.png';
+import Dropdown from 'react-bootstrap/Dropdown';
+import './App.css';
 
 const server_host = `${process.env.REACT_APP_API_URI}`;
 
@@ -18,10 +19,12 @@ const DeleteIcon = styled.img`
 
 const App = () => {
 	const [newTodo, setNewTodo] = useState('');
-	const [dueDate, setDueDate] = useState();
-	const [time, setTime] = useState();
+	const [dueDate, setDueDate] = useState('');
+	const [time, setTime] = useState('');
 	const [todos, setTodos] = useState();
 	const [err, setErr] = useState();
+	const [avatars, setAvatars] = useState();
+	const [reload, setReload] = useState(false);
 
 	useEffect(() => {
 		fetch(`${server_host}/api/todos`)
@@ -31,7 +34,12 @@ const App = () => {
 				setTodos(res);
 			})
 			.catch((err) => console.log('Failed to fetch todo', err));
-	}, []);
+
+		fetch(`${server_host}/api/avatars`)
+			.then((res) => res.json())
+			.then((res) => setAvatars(res))
+			.catch((err) => console.log('Failed to fetch avatars', err));
+	}, [reload]);
 
 	const FormSubmitHandler = (e) => {
 		e.preventDefault();
@@ -40,7 +48,7 @@ const App = () => {
 			return;
 		}
 
-		fetch(`${server_host}/api/todo`, {
+		fetch(`${server_host}/api/add_todo`, {
 			method: 'POST',
 			body: JSON.stringify({ name: newTodo, dueDate, time }),
 			headers: { 'Content-Type': 'application/json' },
@@ -51,6 +59,8 @@ const App = () => {
 		setNewTodo('');
 		setDueDate('');
 		setTime('');
+		setErr();
+		setReload(!reload);
 	};
 
 	const ChangeTodoStatusHander = (e, id) => {
@@ -71,7 +81,7 @@ const App = () => {
 
 	const RemoveTodoHandler = (e, id) => {
 		e.preventDefault();
-		fetch(`${process.env.REACT_APP_API_URI}/api/delete_todo`, {
+		fetch(`${server_host}/api/delete_todo`, {
 			method: 'POST',
 			body: JSON.stringify({ id }),
 			headers: { 'Content-Type': 'application/json' },
@@ -79,26 +89,73 @@ const App = () => {
 			.then((res) => res.json())
 			.then((res) => {
 				let temp = [...todos];
-				let idx = temp.findIndex((x) => x.id === res.id);
+				let idx = temp.findIndex((x) => x.id === id);
 				temp.splice(idx, 1);
 				setTodos(temp);
 			})
 			.catch((err) => console.log('Failed to delete todo', err));
 	};
 
+	const AvatarChangeHandler = (e, todoID, avtID) => {
+		e.preventDefault();
+		fetch(`${server_host}/api/update_todo_avt`, {
+			method: 'POST',
+			body: JSON.stringify({ todoID, avtID }),
+			headers: { 'Content-Type': 'application/json' },
+		})
+			.then((res) => res.json())
+			.then((res) => {
+				setReload(!reload);
+				console.log(res);
+			})
+			.catch((err) => console.log('Failed to update todo avatar', err));
+		setReload(!reload);
+	};
+
 	return (
-		<div>
+		<div style={{ paddingTop: '50px' }}>
 			<center>
 				<h1>Simple Todo List</h1>
 			</center>
 
-			<div style={{ width: '40vw', margin: '0 auto' }}>
+			<div style={{ width: '35vw', margin: '0 auto' }}>
 				<ListGroup>
 					{todos?.map((elm, k) => (
 						<ListGroup.Item key={k} style={{ display: 'flex', alignItems: 'center' }}>
+							<Dropdown>
+								<Dropdown.Toggle
+									style={{
+										backgroundColor: `${elm.background_color}`,
+										color: 'black',
+										borderColor: elm.background_color,
+									}}
+									className='avatar-background'>
+									<div className='avatar-letter'>{elm.initial}</div>
+								</Dropdown.Toggle>
+
+								<Dropdown.Menu>
+									{avatars?.map((el, k) => (
+										<Dropdown.Item key={k}>
+											<div
+												style={{
+													backgroundColor: el.background_color,
+												}}
+												className='avatar-background'>
+												<div
+													className='avatar-letter'
+													onClick={(e, todoID, avtID) =>
+														AvatarChangeHandler(e, elm.id, el.id)
+													}>
+													{el.initial}
+												</div>
+											</div>
+										</Dropdown.Item>
+									))}
+								</Dropdown.Menu>
+							</Dropdown>
 							<input
 								type='checkbox'
-								style={{ marginRight: '5px' }}
+								style={{ margin: '0px 5px 0px 10px' }}
 								id={elm.name}
 								onChange={(e, id) => ChangeTodoStatusHander(e, elm.id)}
 								value={elm.name}
@@ -174,6 +231,7 @@ const App = () => {
 					</Form.Group>
 				</Form>
 			</div>
+			{console.log(reload)}
 		</div>
 	);
 };

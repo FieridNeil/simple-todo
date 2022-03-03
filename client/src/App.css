@@ -1,0 +1,31 @@
+.dropdown-toggle::after {
+	display: none !important;
+}
+
+.dropdown-menu {
+	min-width: 25px !important;
+	inset: 0px auto auto -5px !important;
+}
+
+.dropdown-item {
+	padding: 0.25rem 0.3rem !important;
+}
+
+.avatar-background {
+	width: 30px;
+	height: 30px;
+	border-radius: 50% !important;
+	vertical-align: middle;
+	position: relative;
+	/* background-color: cyan dwimportant; */
+	/* color: black !important; */
+	/* border-color: cyan !important; */
+}
+
+.avatar-letter {
+	font-size: 0.8em;
+	left: 50%;
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+}
